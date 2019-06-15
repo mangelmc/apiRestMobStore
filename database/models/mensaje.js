@@ -1,7 +1,7 @@
 const mongoose = require('../connect');
 const Schema = mongoose.Schema;
 
-const citaSchema = Schema({
+const mensajeSchema = Schema({
     vendedor: {
         type: Schema.Types.ObjectId,
         ref: "Usuario",
@@ -12,29 +12,16 @@ const citaSchema = Schema({
         ref: "Usuario",
         require:'Falta info del comprador'
     },
-    producto: {
-        type: Schema.Types.ObjectId,
-        ref: "Producto",
-        require:'Falta info del producto'
-    },
-    cantidad:{
-        type:Number,
-        require:'Debe poner una cantidad de producto'
-    },
-    estado: {   // por confirmar, cancelada, terminada 
+    texto: {
         type: String,
-        required: 'Falta el estado'
+        required: 'debe poner un texto'
     },   
-    fechaCita: Date,
-    horaCita: String,
-    log: Number,
-    lat: Number,
     fechaRegistro: {
         type: Date,
         default: Date.now()
     }
 });
 
-const cita = mongoose.model('Cita', citaSchema);
+const mensaje = mongoose.model('Mensaje', mensajeSchema);
 
 module.exports = cita;
