@@ -16,7 +16,11 @@ const usuarioSchema = Schema({
     log: Number,
     lat: Number,
     avatar: String,
-    tipo: String, // vendedor, comprador
+    tipo: {
+        type: String,
+        required: 'Debe seleccionar tipo de usuario',
+        enum: ['vendedor', 'comprador']// vendedor, comprador
+    }, 
     mgusta: {
         type: Number,
         default: 0

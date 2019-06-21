@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-mongoose.connect("mongodb://127.0.0.1:27017/apiRestMobStore", {
+mongoose.connect("mongodb://172.17.0.1:27017/apiRestMobStore", {
     useNewUrlParser: true
 }).then(() => {
     console.log('conexion a mongodb exitosa');
