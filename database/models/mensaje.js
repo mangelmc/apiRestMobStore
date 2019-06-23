@@ -24,4 +24,4 @@ const mensajeSchema = Schema({
 
 const mensaje = mongoose.model('Mensaje', mensajeSchema);
 
-module.exports = cita;
+module.exports = mensaje;

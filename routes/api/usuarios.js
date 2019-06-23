@@ -3,7 +3,7 @@ var router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const ObjectId = require('mongoose').Types.ObjectId;
+//const ObjectId = require('mongoose').Types.ObjectId;
 const sha1 = require('sha1');
 
 const Usuario = require('../../database/models/usuario');
@@ -52,7 +52,7 @@ router.post("/imagen/:id", (req, res) => {
         });
       }else{
         if (req.file == undefined) {
-          return res.status(500).json({
+          return res.status(400).json({
             "error" : 'No se recibio la imagen'
     
           });
@@ -65,10 +65,10 @@ router.post("/imagen/:id", (req, res) => {
         var modelImagen = new Imagen(img);
         modelImagen.save()
           .then( (result) => {
-            return Usuario.findByIdAndUpdate(req.params.id,{avatar:'/api/usuarios/imagen/' + result._id}).exec()
+            return Usuario.findByIdAndUpdate(req.params.id,{avatar:'/api/imagenes/' + result._id}).exec()
           })
           .then(result => {
-            res.status(200).json(result);
+            res.status(201).json({message: 'Se Agrego la imagen correctamente',result});
           })
           .catch(err => {
             res.status(500).json({error:err.message})
@@ -78,53 +78,10 @@ router.post("/imagen/:id", (req, res) => {
   });
 
 
-//obtener la imagen
-//en la url se envia con la id de la foto o imagen registrada
 
-router.get("/imagen/:id", (req, res) => { 
-  Imagen.findOne({_id: req.params.id}).exec()
-  .then(doc => {
-    
-    if(doc){
-      //regresamos la imagen deseada
-      
-      var img = fs.readFileSync("./" + doc.path);
-      res.contentType('image/jpeg');
-      if (path.extname(doc.path) == '.png') {
-        res.contentType('image/png');
-      }
-      res.status(200).send(img);
-      //regresamos la imagen deseada
-    }
-    else{
-      res.status(424).json({
-        "error": "La solicitud falló, ,la imagen fue eliminada"
-      });
-      return;
-    }
-  })
-  .catch(err => {
-    res.status(500).json({
-        error: err.message
-    })
-  });
-});
-router.get("/imagen", (req, res) => { 
-  Imagen.find().exec()
-  .then(docs => {
-    res.json({
-      data: docs
-    });
-  })
-  .catch(err => {
-    res.status(500).json({
-        error: err.message
-    })
-  });
-});
 
 //>>>>>>>>>>>>>>>>>>>>
-  router.get('/', function (req, res, next) {
+router.get('/', function (req, res, next) {
   Usuario.find().select('-__v -password -fechaRegistro').exec().then(docs => {
     if(docs.length == 0){
       return res.status(404).json({message: 'no existen usuarios registrados'});
@@ -194,7 +151,7 @@ router.post('/login', (req, res, next) => {
                 });
             }
             if (req.body.password != user[0].password) {
-                return res.status(401).json({
+                return res.status(400).json({
                     message: "Fallo al autenticar, verifique los datos"
                 });
             }else{
@@ -208,7 +165,8 @@ router.post('/login', (req, res, next) => {
                 
                 return res.status(200).json({
                     message: "Acceso correcto",
-                    token: token
+                    tipo: user[0].tipo,
+                    token
                 });
             }
         })
@@ -230,36 +188,27 @@ router.patch('/:id', function (req, res, next) {
       }  
     });
     console.log(datos);
-    Usuario.findOneAndUpdate({_id: idUsuario}, datos).exec()
+    Usuario.updateOne({_id: idUsuario}, datos).exec()
         .then(result => {
-            res.json({
-                message: "Datos actualizados"
-            });
+          let message = 'Datos actualizados';
+          if (result.ok == 0) {
+              message = 'Verifique los datos, no se realizaron cambios';
+          }
+          if (result.ok == 1 && result.n == 0) {
+              message = 'No se encontro el recurso';
+          }
+          if (result.ok == 1 && result.n == 1 && result.nModified == 0) {
+              message = 'Se recibieron los mismos datos antiguos,no se realizaron cambios';
+          }
+          res.json({
+              message,
+              result
+          });
         }).catch(err => {
             res.status(500).json({
                 error: err
             })
         });
-});
-
-
-
-router.get('/lab7', function(req, res, next) {
-  
-    const data = [];
-    for (let index = 0; index < 50; index++) {
-        
-        let item = {};
-
-        item.descripcion = 'Descripcion ' + index;
-        item.title = 'Titulo ' + index;
-        item.image = 'https://s3-us-west-2.amazonaws.com/devcodepro/media/blog/la-fundacion-de-google.png';    
-        data.push(item);
-    }
-    res.json({
-        data
-    });
-
 });
 
 module.exports = router;

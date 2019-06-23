@@ -30,6 +30,9 @@ const productoSchema = Schema({
     },
     foto: String
 });
+mongoose.set('useCreateIndex', true);
+
+productoSchema.index({descripcion: 'text'});
 
 const producto = mongoose.model('Producto', productoSchema);
 
